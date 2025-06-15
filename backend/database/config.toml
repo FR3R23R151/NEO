@@ -1,7 +1,7 @@
 # For detailed configuration reference documentation, visit:
-# https://supabase.com/docs/guides/local-development/cli/config
+# https://database.com/docs/guides/local-development/cli/config
 # A string used to distinguish different Supabase projects on the same host. Defaults to the
-# working directory name when running `supabase init`.
+# working directory name when running `database init`.
 project_id = "agentpress"
 
 [api]
@@ -47,14 +47,14 @@ max_client_conn = 100
 
 [db.migrations]
 # Specifies an ordered list of schema files that describe your database.
-# Supports glob patterns relative to supabase directory: "./schemas/*.sql"
+# Supports glob patterns relative to database directory: "./schemas/*.sql"
 schema_paths = []
 
 [db.seed]
 # If enabled, seeds the database after migrations during a db reset.
 enabled = true
 # Specifies an ordered list of seed files to load during db reset.
-# Supports glob patterns relative to supabase directory: "./seeds/*.sql"
+# Supports glob patterns relative to database directory: "./seeds/*.sql"
 sql_paths = ["./seed.sql"]
 
 [realtime]
@@ -176,7 +176,7 @@ otp_expiry = 3600
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+# content_path = "./database/templates/invite.html"
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.
@@ -271,7 +271,7 @@ enabled = false
 # Use Clerk as a third-party provider alongside Supabase Auth.
 [auth.third_party.clerk]
 enabled = false
-# Obtain from https://clerk.com/setup/supabase
+# Obtain from https://clerk.com/setup/database
 # domain = "example.clerk.accounts.dev"
 
 [edge_runtime]

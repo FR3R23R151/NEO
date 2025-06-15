@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/database/server';
 import ManageTeamMembers from '@/components/basejump/manage-team-members';
 import ManageTeamInvitations from '@/components/basejump/manage-team-invitations';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -33,8 +33,8 @@ export default function TeamMembersPage({
   React.useEffect(() => {
     async function loadData() {
       try {
-        const supabaseClient = await createClient();
-        const { data } = await supabaseClient.rpc('get_account_by_slug', {
+        const databaseClient = await createClient();
+        const { data } = await databaseClient.rpc('get_account_by_slug', {
           slug: accountSlug,
         });
         setTeamAccount(data);

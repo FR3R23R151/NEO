@@ -86,18 +86,18 @@ async def run_agent(
         logger.info(f"Using custom tool configuration from agent")
     
     # Register tools based on configuration
-    # If no agent config (enabled_tools is None), register ALL tools for full Suna capabilities
+    # If no agent config (enabled_tools is None), register ALL tools for full NEO capabilities
     # If agent config exists, only register explicitly enabled tools
     if is_agent_builder:
         logger.info("Agent builder mode - registering only update agent tool")
         from agent.tools.update_agent_tool import UpdateAgentTool
-        from services.supabase import DBConnection
+        from services.database import DBConnection
         db = DBConnection()
         thread_manager.add_tool(UpdateAgentTool, thread_manager=thread_manager, db_connection=db, agent_id=target_agent_id)
 
     if enabled_tools is None:
-        # No agent specified - register ALL tools for full Suna experience
-        logger.info("No agent specified - registering all tools for full Suna capabilities")
+        # No agent specified - register ALL tools for full NEO experience
+        logger.info("No agent specified - registering all tools for full NEO capabilities")
         thread_manager.add_tool(SandboxShellTool, project_id=project_id, thread_manager=thread_manager)
         thread_manager.add_tool(SandboxFilesTool, project_id=project_id, thread_manager=thread_manager)
         thread_manager.add_tool(SandboxBrowserTool, project_id=project_id, thread_id=thread_id, thread_manager=thread_manager)
@@ -574,7 +574,7 @@ async def run_agent(
 # async def test_agent():
 #     """Test function to run the agent with a sample query"""
 #     from agentpress.thread_manager import ThreadManager
-#     from services.supabase import DBConnection
+#     from services.database import DBConnection
 
 #     # Initialize ThreadManager
 #     thread_manager = ThreadManager()

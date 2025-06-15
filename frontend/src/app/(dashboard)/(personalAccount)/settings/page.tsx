@@ -1,9 +1,9 @@
 import EditPersonalAccountName from '@/components/basejump/edit-personal-account-name';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/database/server';
 
 export default async function PersonalAccountSettingsPage() {
-  const supabaseClient = await createClient();
-  const { data: personalAccount } = await supabaseClient.rpc(
+  const databaseClient = await createClient();
+  const { data: personalAccount } = await databaseClient.rpc(
     'get_personal_account',
   );
 

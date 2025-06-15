@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useRef, useState } from 'react';
 import Script from 'next/script';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/database/client';
 import { useTheme } from 'next-themes';
 
 // Add type declarations for Google One Tap
@@ -75,11 +75,11 @@ export default function GoogleSignIn({ returnUrl }: GoogleSignInProps) {
     async (response: GoogleSignInResponse) => {
       try {
         setIsLoading(true);
-        const supabase = createClient();
+        const database = createClient();
 
         console.log('Starting Google sign in process');
 
-        const { error } = await supabase.auth.signInWithIdToken({
+        const { error } = await database.auth.signInWithIdToken({
           provider: 'google',
           token: response.credential,
         });

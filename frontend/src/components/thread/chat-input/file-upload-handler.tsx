@@ -4,7 +4,7 @@ import React, { forwardRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Paperclip, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/database/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { fileQueryKeys } from '@/hooks/react-query/files/use-file-queries';
 import {
@@ -88,10 +88,10 @@ const uploadFiles = async (
       formData.append('file', file, normalizedName);
       formData.append('path', uploadPath);
 
-      const supabase = createClient();
+      const database = createClient();
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await database.auth.getSession();
 
       if (!session?.access_token) {
         throw new Error('No access token available');

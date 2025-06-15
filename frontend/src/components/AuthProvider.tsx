@@ -7,12 +7,12 @@ import React, {
   useEffect,
   ReactNode,
 } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { User, Session } from '@supabase/supabase-js';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/database/client';
+import { User, Session } from '@database/database-js';
+import { SupabaseClient } from '@database/database-js';
 
 type AuthContextType = {
-  supabase: SupabaseClient;
+  database: SupabaseClient;
   session: Session | null;
   user: User | null;
   isLoading: boolean;
@@ -22,7 +22,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const supabase = createClient();
+  const database = createClient();
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const getInitialSession = async () => {
       const {
         data: { session: currentSession },
-      } = await supabase.auth.getSession();
+      } = await database.auth.getSession();
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       setIsLoading(false);
@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     getInitialSession();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(
+    const { data: authListener } = database.auth.onAuthStateChange(
       (_event, newSession) => {
         setSession(newSession);
         setUser(newSession?.user ?? null);
@@ -52,15 +52,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, [supabase, isLoading]); // Added isLoading to dependencies to ensure it runs once after initial load completes
+  }, [database, isLoading]); // Added isLoading to dependencies to ensure it runs once after initial load completes
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await database.auth.signOut();
     // State updates will be handled by onAuthStateChange
   };
 
   const value = {
-    supabase,
+    database,
     session,
     user,
     isLoading,

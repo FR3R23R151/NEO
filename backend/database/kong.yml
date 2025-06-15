@@ -4,7 +4,7 @@ _transform: true
 
 services:
   - name: postgrest
-    url: http://supabase-db:5432
+    url: http://database-db:5432
     routes:
       - name: postgrest-route
         paths:
@@ -16,7 +16,7 @@ services:
           hide_credentials: true
   
   - name: auth
-    url: http://supabase-db:5432
+    url: http://database-db:5432
     routes:
       - name: auth-route
         paths:
@@ -28,7 +28,7 @@ services:
           hide_credentials: true
 
   - name: storage
-    url: http://supabase-db:5432
+    url: http://database-db:5432
     routes:
       - name: storage-route
         paths:

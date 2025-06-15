@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv(".env")
 
-from services.supabase import DBConnection
+from services.database import DBConnection
 from utils.logger import logger
 
 db_connection = None
@@ -79,7 +79,7 @@ async def generate_share_links(n: int) -> List[str]:
             logger.warning("No thread IDs found, returning empty list")
             return []
         
-        share_links = [f"suna.so/share/{thread_id}" for thread_id in thread_ids]
+        share_links = [f"NEO.so/share/{thread_id}" for thread_id in thread_ids]
         
         logger.info(f"Generated {len(share_links)} share links")
         return share_links

@@ -5,16 +5,16 @@ import {
   CardHeader,
   CardTitle,
 } from '../ui/card';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/database/server';
 import { Table, TableRow, TableBody, TableCell } from '../ui/table';
 import { Button } from '../ui/button';
 import Link from 'next/link';
 import { Badge } from '../ui/badge';
 
 export default async function ManageTeams() {
-  const supabaseClient = await createClient();
+  const databaseClient = await createClient();
 
-  const { data } = await supabaseClient.rpc('get_accounts');
+  const { data } = await databaseClient.rpc('get_accounts');
 
   const teams: any[] = data?.filter(
     (team: any) => team.personal_account === false,

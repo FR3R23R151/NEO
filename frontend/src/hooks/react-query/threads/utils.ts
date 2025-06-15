@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/database/client";
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -31,8 +31,8 @@ export type Thread = {
   
 
   export const getThread = async (threadId: string): Promise<Thread> => {
-    const supabase = createClient();
-    const { data, error } = await supabase
+    const database = createClient();
+    const { data, error } = await database
       .from('threads')
       .select('*')
       .eq('thread_id', threadId)
@@ -47,12 +47,12 @@ export const updateThread = async (
     threadId: string,
     data: Partial<Thread>,
   ): Promise<Thread> => {
-    const supabase = createClient();
+    const database = createClient();
   
     const updateData = { ...data };
   
     // Update the thread
-    const { data: updatedThread, error } = await supabase
+    const { data: updatedThread, error } = await database
       .from('threads')
       .update(updateData)
       .eq('thread_id', threadId)
@@ -76,10 +76,10 @@ export const toggleThreadPublicStatus = async (
 
 const deleteSandbox = async (sandboxId: string): Promise<void> => {
   try {
-    const supabase = createClient();
+    const database = createClient();
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await database.auth.getSession();
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -104,14 +104,14 @@ const deleteSandbox = async (sandboxId: string): Promise<void> => {
 
 export const deleteThread = async (threadId: string, sandboxId?: string): Promise<void> => {
     try {
-      const supabase = createClient();
+      const database = createClient();
 
       // If sandbox ID is provided, delete it directly
       if (sandboxId) {
         await deleteSandbox(sandboxId);
       } else {
         // Otherwise, get the thread to find its project and sandbox
-        const { data: thread, error: threadError } = await supabase
+        const { data: thread, error: threadError } = await database
           .from('threads')
           .select('project_id')
           .eq('thread_id', threadId)
@@ -124,7 +124,7 @@ export const deleteThread = async (threadId: string, sandboxId?: string): Promis
 
         // If thread has a project, get sandbox ID and delete it
         if (thread?.project_id) {
-          const { data: project } = await supabase
+          const { data: project } = await database
             .from('projects')
             .select('sandbox')
             .eq('project_id', thread.project_id)
@@ -137,7 +137,7 @@ export const deleteThread = async (threadId: string, sandboxId?: string): Promis
       }
 
       console.log(`Deleting all agent runs for thread ${threadId}`);
-      const { error: agentRunsError } = await supabase
+      const { error: agentRunsError } = await database
         .from('agent_runs')
         .delete()
         .eq('thread_id', threadId);
@@ -148,7 +148,7 @@ export const deleteThread = async (threadId: string, sandboxId?: string): Promis
       }
 
       console.log(`Deleting all messages for thread ${threadId}`);
-      const { error: messagesError } = await supabase
+      const { error: messagesError } = await database
         .from('messages')
         .delete()
         .eq('thread_id', threadId);
@@ -159,7 +159,7 @@ export const deleteThread = async (threadId: string, sandboxId?: string): Promis
       }
 
       console.log(`Deleting thread ${threadId}`);
-      const { error: threadError2 } = await supabase
+      const { error: threadError2 } = await database
         .from('threads')
         .delete()
         .eq('thread_id', threadId);
@@ -181,10 +181,10 @@ export const deleteThread = async (threadId: string, sandboxId?: string): Promis
 
 export const getPublicProjects = async (): Promise<Project[]> => {
     try {
-      const supabase = createClient();
+      const database = createClient();
   
       // Query for threads that are marked as public
-      const { data: publicThreads, error: threadsError } = await supabase
+      const { data: publicThreads, error: threadsError } = await database
         .from('threads')
         .select('project_id')
         .eq('is_public', true);
@@ -210,7 +210,7 @@ export const getPublicProjects = async (): Promise<Project[]> => {
       }
   
       // Get the projects that have public threads
-      const { data: projects, error: projectsError } = await supabase
+      const { data: projects, error: projectsError } = await database
         .from('projects')
         .select('*')
         .in('project_id', publicProjectIds);
@@ -258,10 +258,10 @@ export const getPublicProjects = async (): Promise<Project[]> => {
 
 
   export const getProject = async (projectId: string): Promise<Project> => {
-    const supabase = createClient();
+    const database = createClient();
   
     try {
-      const { data, error } = await supabase
+      const { data, error } = await database
         .from('projects')
         .select('*')
         .eq('project_id', projectId)
@@ -284,7 +284,7 @@ export const getPublicProjects = async (): Promise<Project[]> => {
           try {
             const {
               data: { session },
-            } = await supabase.auth.getSession();
+            } = await database.auth.getSession();
   
             // For public projects, we don't need authentication
             const headers: Record<string, string> = {
@@ -354,7 +354,7 @@ export const getPublicProjects = async (): Promise<Project[]> => {
     projectId: string,
     data: Partial<Project>,
   ): Promise<Project> => {
-    const supabase = createClient();
+    const database = createClient();
   
     console.log('Updating project with ID:', projectId);
     console.log('Update data:', data);
@@ -365,7 +365,7 @@ export const getPublicProjects = async (): Promise<Project[]> => {
       throw new Error('Cannot update project: Invalid project ID');
     }
   
-    const { data: updatedData, error } = await supabase
+    const { data: updatedData, error } = await database
       .from('projects')
       .update(data)
       .eq('project_id', projectId)

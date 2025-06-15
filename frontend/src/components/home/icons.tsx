@@ -2168,7 +2168,7 @@ export const Icons = {
       </defs>
     </svg>
   ),
-  supabase: () => (
+  database: () => (
     <svg
       width="52"
       height="60"

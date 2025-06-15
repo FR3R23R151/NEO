@@ -28,7 +28,7 @@ import stripe
 load_dotenv(".env")
 
 # Import relative modules
-from services.supabase import DBConnection
+from services.database import DBConnection
 from utils.logger import logger
 from utils.config import config
 

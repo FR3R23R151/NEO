@@ -10,20 +10,20 @@ import {
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
 import { UserIcon } from 'lucide-react';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/database/server';
 import { redirect } from 'next/navigation';
 
 export default async function UserAccountButton() {
-  const supabaseClient = await createClient();
-  const { data: personalAccount } = await supabaseClient.rpc(
+  const databaseClient = await createClient();
+  const { data: personalAccount } = await databaseClient.rpc(
     'get_personal_account',
   );
 
   const signOut = async () => {
     'use server';
 
-    const supabase = await createClient();
-    await supabase.auth.signOut();
+    const database = await createClient();
+    await database.auth.signOut();
     return redirect('/');
   };
 

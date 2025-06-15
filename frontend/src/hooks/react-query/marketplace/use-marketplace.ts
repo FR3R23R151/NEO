@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/database/client';
 import { isFlagEnabled } from '@/lib/feature-flags';
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
@@ -51,8 +51,8 @@ export function useMarketplaceAgents(params: MarketplaceAgentsParams = {}) {
           throw new Error('Marketplace is not enabled');
         }
         
-        const supabase = createClient();
-        const { data: { session } } = await supabase.auth.getSession();
+        const database = createClient();
+        const { data: { session } } = await database.auth.getSession();
 
         const queryParams = new URLSearchParams();
         if (params.page) queryParams.append('page', params.page.toString());
@@ -108,8 +108,8 @@ export function useAddAgentToLibrary() {
           throw new Error('Marketplace is not enabled');
         }
         
-        const supabase = createClient();
-        const { data: { session } } = await supabase.auth.getSession();
+        const database = createClient();
+        const { data: { session } } = await database.auth.getSession();
 
         if (!session) {
           throw new Error('You must be logged in to add agents to your library');
@@ -154,8 +154,8 @@ export function usePublishAgent() {
           throw new Error('Marketplace is not enabled');
         }
         
-        const supabase = createClient();
-        const { data: { session } } = await supabase.auth.getSession();
+        const database = createClient();
+        const { data: { session } } = await database.auth.getSession();
 
         if (!session) {
           throw new Error('You must be logged in to publish agents');
@@ -196,8 +196,8 @@ export function useUnpublishAgent() {
           throw new Error('Marketplace is not enabled');
         }
         
-        const supabase = createClient();
-        const { data: { session } } = await supabase.auth.getSession();
+        const database = createClient();
+        const { data: { session } } = await database.auth.getSession();
 
         if (!session) {
           throw new Error('You must be logged in to unpublish agents');
@@ -237,8 +237,8 @@ export function useUserAgentLibrary() {
           throw new Error('Marketplace is not enabled');
         }
         
-        const supabase = createClient();
-        const { data: { session } } = await supabase.auth.getSession();
+        const database = createClient();
+        const { data: { session } } = await database.auth.getSession();
 
         if (!session) {
           throw new Error('You must be logged in to view your agent library');

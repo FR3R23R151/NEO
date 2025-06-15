@@ -1,5 +1,5 @@
 import { acceptInvitation } from '@/lib/actions/invitations';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/database/server';
 import { Alert } from '../ui/alert';
 import { Card, CardContent } from '../ui/card';
 import { SubmitButton } from '../ui/submit-button';
@@ -8,8 +8,8 @@ type Props = {
   token: string;
 };
 export default async function AcceptTeamInvitation({ token }: Props) {
-  const supabaseClient = await createClient();
-  const { data: invitation } = await supabaseClient.rpc('lookup_invitation', {
+  const databaseClient = await createClient();
+  const { data: invitation } = await databaseClient.rpc('lookup_invitation', {
     lookup_invitation_token: token,
   });
 

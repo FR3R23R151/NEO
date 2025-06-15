@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from sandbox.sandbox import get_or_start_sandbox, delete_sandbox
 from utils.logger import logger
 from utils.auth_utils import get_optional_user_id
-from services.supabase import DBConnection
+from services.database import DBConnection
 
 # Initialize shared resources
 router = APIRouter(tags=["sandbox"])

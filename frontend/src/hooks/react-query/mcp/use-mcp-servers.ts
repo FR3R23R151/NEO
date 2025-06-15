@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/database/client';
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
 
@@ -70,12 +70,12 @@ interface PopularServersV2Response {
 }
 
 export const useMCPServers = (query?: string, page: number = 1, pageSize: number = 20) => {
-  const supabase = createClient();
+  const database = createClient();
 
   return useQuery({
     queryKey: ['mcp-servers', query, page, pageSize],
     queryFn: async (): Promise<MCPServerListResponse> => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await database.auth.getSession();
       if (!session) throw new Error('No session');
 
       const params = new URLSearchParams({
@@ -104,12 +104,12 @@ export const useMCPServers = (query?: string, page: number = 1, pageSize: number
 };
 
 export const useMCPServerDetails = (qualifiedName: string, enabled: boolean = true) => {
-  const supabase = createClient();
+  const database = createClient();
 
   return useQuery({
     queryKey: ['mcp-server-details', qualifiedName],
     queryFn: async (): Promise<MCPServerDetailResponse> => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await database.auth.getSession();
       if (!session) throw new Error('No session');
 
       const response = await fetch(
@@ -133,12 +133,12 @@ export const useMCPServerDetails = (qualifiedName: string, enabled: boolean = tr
 };
 
 export const usePopularMCPServersV2 = (page: number = 1, pageSize: number = 50) => {
-  const supabase = createClient();
+  const database = createClient();
 
   return useQuery({
     queryKey: ['mcp-servers-popular-v2', page, pageSize],
     queryFn: async (): Promise<PopularServersV2Response> => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await database.auth.getSession();
       if (!session) throw new Error('No session');
 
       const params = new URLSearchParams({

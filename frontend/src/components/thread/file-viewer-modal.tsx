@@ -36,7 +36,7 @@ import {
   Project,
 } from '@/lib/api';
 import { toast } from 'sonner';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/database/client';
 import { useAuth } from '@/components/AuthProvider';
 import {
   DropdownMenu,
@@ -1143,10 +1143,10 @@ export function FileViewerModal({
         formData.append('file', file, normalizedName);
         formData.append('path', uploadPath);
 
-        const supabase = createClient();
+        const database = createClient();
         const {
           data: { session },
-        } = await supabase.auth.getSession();
+        } = await database.auth.getSession();
 
         if (!session?.access_token) {
           throw new Error('No access token available');

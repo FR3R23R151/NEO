@@ -24,7 +24,7 @@ class Colors:
     UNDERLINE = '\033[4m'
 
 def print_banner():
-    """Print Suna setup banner"""
+    """Print NEO setup banner"""
     print(f"""
 {Colors.BLUE}{Colors.BOLD}
    ███████╗██╗   ██╗███╗   ██╗ █████╗ 
@@ -68,7 +68,7 @@ def load_env_data():
         with open(ENV_DATA_FILE, 'r') as f:
             return json.load(f)
     return {
-        'supabase': {},
+        'database': {},
         'daytona': {},
         'llm': {},
         'search': {},
@@ -155,22 +155,22 @@ def check_docker_running():
         print_error("Docker is installed but not running. Please start Docker and try again.")
         sys.exit(1)
 
-def check_suna_directory():
-    """Check if we're in a Suna repository"""
+def check_NEO_directory():
+    """Check if we're in a NEO repository"""
     required_dirs = ['backend', 'frontend']
     required_files = ['README.md', 'docker-compose.yaml']
     
     for directory in required_dirs:
         if not os.path.isdir(directory):
-            print_error(f"'{directory}' directory not found. Make sure you're in the Suna repository root.")
+            print_error(f"'{directory}' directory not found. Make sure you're in the NEO repository root.")
             return False
     
     for file in required_files:
         if not os.path.isfile(file):
-            print_error(f"'{file}' not found. Make sure you're in the Suna repository root.")
+            print_error(f"'{file}' not found. Make sure you're in the NEO repository root.")
             return False
     
-    print_success("Suna repository detected")
+    print_success("NEO repository detected")
     return True
 
 def validate_url(url, allow_empty=False):
@@ -196,38 +196,38 @@ def validate_api_key(api_key, allow_empty=False):
     # Basic check: not empty and at least 10 chars
     return bool(api_key)
 
-def collect_supabase_info():
+def collect_database_info():
     """Collect Supabase information"""
     print_info("You'll need to create a Supabase project before continuing")
-    print_info("Visit https://supabase.com/dashboard/projects to create one")
+    print_info("Visit https://database.com/dashboard/projects to create one")
     print_info("After creating your project, visit the project settings -> Data API and you'll need to get the following information:")
-    print_info("1. Supabase Project URL (e.g., https://abcdefg.supabase.co)")
+    print_info("1. Supabase Project URL (e.g., https://abcdefg.database.co)")
     print_info("2. Supabase anon key")
     print_info("3. Supabase service role key")
     input("Press Enter to continue once you've created your Supabase project...")
     
     while True:
-        supabase_url = input("Enter your Supabase Project URL (e.g., https://abcdefg.supabase.co): ")
-        if validate_url(supabase_url):
+        database_url = input("Enter your Supabase Project URL (e.g., https://abcdefg.database.co): ")
+        if validate_url(database_url):
             break
         print_error("Invalid URL format. Please enter a valid URL.")
     
     while True:
-        supabase_anon_key = input("Enter your Supabase anon key: ")
-        if validate_api_key(supabase_anon_key):
+        database_anon_key = input("Enter your Supabase anon key: ")
+        if validate_api_key(database_anon_key):
             break
         print_error("Invalid API key format. It should be at least 10 characters long.")
     
     while True:
-        supabase_service_role_key = input("Enter your Supabase service role key: ")
-        if validate_api_key(supabase_service_role_key):
+        database_service_role_key = input("Enter your Supabase service role key: ")
+        if validate_api_key(database_service_role_key):
             break
         print_error("Invalid API key format. It should be at least 10 characters long.")
     
     return {
-        'SUPABASE_URL': supabase_url,
-        'SUPABASE_ANON_KEY': supabase_anon_key,
-        'SUPABASE_SERVICE_ROLE_KEY': supabase_service_role_key,
+        'SUPABASE_URL': database_url,
+        'SUPABASE_ANON_KEY': database_anon_key,
+        'SUPABASE_SERVICE_ROLE_KEY': database_service_role_key,
     }
 
 def collect_daytona_info():
@@ -237,7 +237,7 @@ def collect_daytona_info():
     print_info("Then, generate an API key from 'Keys' menu")
     print_info("After that, go to Images (https://app.daytona.io/dashboard/images)")
     print_info("Click '+ Create Image'")
-    print_info(f"Enter 'kortix/suna:0.1.3' as the image name")
+    print_info(f"Enter 'kortix/NEO:0.1.3' as the image name")
     print_info(f"Set '/usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf' as the Entrypoint")
 
     input("Press Enter to continue once you've completed these steps...")
@@ -256,7 +256,7 @@ def collect_daytona_info():
 
 def collect_llm_api_keys():
     """Collect LLM API keys for various providers"""
-    print_info("You need at least one LLM provider API key to use Suna")
+    print_info("You need at least one LLM provider API key to use NEO")
     print_info("Available LLM providers: OpenAI, Anthropic, OpenRouter")
     
     # Display provider selection options
@@ -472,7 +472,7 @@ def configure_backend_env(env_vars, use_docker=True):
     all_config = {}
     
     # Create a string with the formatted content
-    env_content = """# Generated by Suna setup script
+    env_content = """# Generated by NEO setup script
 
 # Environment Mode
 # Valid values: local, staging, production
@@ -482,7 +482,7 @@ ENV_MODE=local
 """
 
     # Supabase section
-    for key, value in env_vars['supabase'].items():
+    for key, value in env_vars['database'].items():
         env_content += f"{key}={value}\n"
     
     # Redis section
@@ -569,8 +569,8 @@ def configure_frontend_env(env_vars, use_docker=True):
     backend_url = "http://localhost:8000/api"
 
     config = {
-        'NEXT_PUBLIC_SUPABASE_URL': env_vars['supabase']['SUPABASE_URL'],
-        'NEXT_PUBLIC_SUPABASE_ANON_KEY': env_vars['supabase']['SUPABASE_ANON_KEY'],
+        'NEXT_PUBLIC_SUPABASE_URL': env_vars['database']['SUPABASE_URL'],
+        'NEXT_PUBLIC_SUPABASE_ANON_KEY': env_vars['database']['SUPABASE_ANON_KEY'],
         'NEXT_PUBLIC_BACKEND_URL': backend_url,
         'NEXT_PUBLIC_URL': 'http://localhost:3000',
         'NEXT_PUBLIC_ENV_MODE': 'LOCAL',
@@ -584,14 +584,14 @@ def configure_frontend_env(env_vars, use_docker=True):
     print_success(f"Frontend .env.local file created at {env_path}")
     print_info(f"Backend URL is set to: {backend_url}")
 
-def setup_supabase():
+def setup_database():
     """Setup Supabase database"""
     print_info("Setting up Supabase database...")
     
     # Check if the Supabase CLI is installed
     try:
         subprocess.run(
-            ['supabase', '--version'],
+            ['database', '--version'],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             check=True,
@@ -599,26 +599,26 @@ def setup_supabase():
         )
     except (subprocess.SubprocessError, FileNotFoundError):
         print_error("Supabase CLI is not installed.")
-        print_info("Please install it by following instructions at https://supabase.com/docs/guides/cli/getting-started")
+        print_info("Please install it by following instructions at https://database.com/docs/guides/cli/getting-started")
         print_info("After installing, run this setup again")
         sys.exit(1)
     
     # Extract project reference from Supabase URL
-    supabase_url = os.environ.get('SUPABASE_URL')
-    if not supabase_url:
+    database_url = os.environ.get('SUPABASE_URL')
+    if not database_url:
         # Get from main function if environment variable not set
         env_path = os.path.join('backend', '.env')
         if os.path.exists(env_path):
             with open(env_path, 'r') as f:
                 for line in f:
                     if line.startswith('SUPABASE_URL='):
-                        supabase_url = line.strip().split('=', 1)[1]
+                        database_url = line.strip().split('=', 1)[1]
                         break
 
     project_ref = None
-    if supabase_url:
-        # Extract project reference from URL (format: https://[project_ref].supabase.co)
-        match = re.search(r'https://([^.]+)\.supabase\.co', supabase_url)
+    if database_url:
+        # Extract project reference from URL (format: https://[project_ref].database.co)
+        match = re.search(r'https://([^.]+)\.database\.co', database_url)
         if match:
             project_ref = match.group(1)
             print_success(f"Extracted project reference '{project_ref}' from your Supabase URL")
@@ -627,7 +627,7 @@ def setup_supabase():
     if not project_ref:
         print_info("Could not extract project reference from Supabase URL")
         print_info("Get your Supabase project reference from the Supabase dashboard")
-        print_info("It's the portion after 'https://' and before '.supabase.co' in your project URL")
+        print_info("It's the portion after 'https://' and before '.database.co' in your project URL")
         project_ref = input("Enter your Supabase project reference: ")
     
     # Change the working directory to backend
@@ -637,12 +637,12 @@ def setup_supabase():
     try:
         # Login to Supabase CLI (interactive)
         print_info("Logging into Supabase CLI...")
-        subprocess.run(['supabase', 'login'], check=True, shell=IS_WINDOWS)
+        subprocess.run(['database', 'login'], check=True, shell=IS_WINDOWS)
         
         # Link to project
         print_info(f"Linking to Supabase project {project_ref}...")
         subprocess.run(
-            ['supabase', 'link', '--project-ref', project_ref],
+            ['database', 'link', '--project-ref', project_ref],
             cwd=backend_dir,
             check=True,
             shell=IS_WINDOWS
@@ -651,7 +651,7 @@ def setup_supabase():
         # Push database migrations
         print_info("Pushing database migrations...")
         subprocess.run(
-            ['supabase', 'db', 'push'],
+            ['database', 'db', 'push'],
             cwd=backend_dir,
             check=True,
             shell=IS_WINDOWS
@@ -708,11 +708,11 @@ def install_dependencies():
         print_info("You may need to install them manually.")
         return False
 
-def start_suna():
-    """Start Suna using Docker Compose or manual startup"""
-    print_info("You can start Suna using either Docker Compose or by manually starting the frontend, backend and worker.")
+def start_NEO():
+    """Start NEO using Docker Compose or manual startup"""
+    print_info("You can start NEO using either Docker Compose or by manually starting the frontend, backend and worker.")
 
-    print(f"\n{Colors.CYAN}How would you like to start Suna?{Colors.ENDC}")
+    print(f"\n{Colors.CYAN}How would you like to start NEO?{Colors.ENDC}")
     print(f"{Colors.CYAN}[1] {Colors.GREEN}Docker Compose{Colors.ENDC} {Colors.CYAN}(recommended, starts all services){Colors.ENDC}")
     print(f"{Colors.CYAN}[2] {Colors.GREEN}Manual startup{Colors.ENDC} {Colors.CYAN}(requires Redis, RabbitMQ & separate terminals){Colors.ENDC}\n")
     
@@ -725,7 +725,7 @@ def start_suna():
     use_docker = start_method == "1"
     
     if use_docker:
-        print_info("Starting Suna with Docker Compose...")
+        print_info("Starting NEO with Docker Compose...")
         
         try:
             # TODO: uncomment when we have pre-built images on Docker Hub or GHCR
@@ -784,12 +784,12 @@ def start_suna():
             )
             
             if "backend" in result.stdout and "frontend" in result.stdout:
-                print_success("Suna services are up and running!")
+                print_success("NEO services are up and running!")
             else:
                 print_warning("Some services might not be running correctly. Check 'docker compose ps' for details.")
             
         except subprocess.SubprocessError as e:
-            print_error(f"Failed to start Suna: {e}")
+            print_error(f"Failed to start NEO: {e}")
             sys.exit(1)
             
         return use_docker
@@ -806,26 +806,26 @@ def start_suna():
 
 def final_instructions(use_docker=True, env_vars=None):
     """Show final instructions"""
-    print(f"\n{Colors.GREEN}{Colors.BOLD}✨ Suna Setup Complete! ✨{Colors.ENDC}\n")
+    print(f"\n{Colors.GREEN}{Colors.BOLD}✨ NEO Setup Complete! ✨{Colors.ENDC}\n")
     
     # Display LLM configuration info if available
     if env_vars and 'llm' in env_vars and 'MODEL_TO_USE' in env_vars['llm']:
         default_model = env_vars['llm']['MODEL_TO_USE']
-        print_info(f"Suna is configured to use {Colors.GREEN}{default_model}{Colors.ENDC} as the default LLM model")
+        print_info(f"NEO is configured to use {Colors.GREEN}{default_model}{Colors.ENDC} as the default LLM model")
     
     if use_docker:
-        print_info("Your Suna instance is now running!")
+        print_info("Your NEO instance is now running!")
         print_info("Access it at: http://localhost:3000")
-        print_info("Create an account using Supabase authentication to start using Suna")
+        print_info("Create an account using Supabase authentication to start using NEO")
         print("\nUseful Docker commands:")
-        print(f"{Colors.CYAN}  docker compose ps{Colors.ENDC}         - Check the status of Suna services")
+        print(f"{Colors.CYAN}  docker compose ps{Colors.ENDC}         - Check the status of NEO services")
         print(f"{Colors.CYAN}  docker compose logs{Colors.ENDC}       - View logs from all services")
         print(f"{Colors.CYAN}  docker compose logs -f{Colors.ENDC}    - Follow logs from all services")
-        print(f"{Colors.CYAN}  docker compose down{Colors.ENDC}       - Stop Suna services")
-        print(f"{Colors.CYAN}  docker compose up -d{Colors.ENDC}      - Start Suna services (after they've been stopped)")
+        print(f"{Colors.CYAN}  docker compose down{Colors.ENDC}       - Stop NEO services")
+        print(f"{Colors.CYAN}  docker compose up -d{Colors.ENDC}      - Start NEO services (after they've been stopped)")
     else:
-        print_info("Suna setup is complete but services are not running yet.")
-        print_info("To start Suna, you need to:")
+        print_info("NEO setup is complete but services are not running yet.")
+        print_info("To start NEO, you need to:")
         
         print_info("1. Start Redis and RabbitMQ (required for backend):")
         print(f"{Colors.CYAN}    cd backend")
@@ -843,8 +843,8 @@ def final_instructions(use_docker=True, env_vars=None):
         print(f"{Colors.CYAN}    cd backend")
         print(f"    poetry run python3.11 -m dramatiq run_agent_background{Colors.ENDC}")
         
-        print_info("4. Once all services are running, access Suna at: http://localhost:3000")
-        print_info("5. Create an account using Supabase authentication to start using Suna")
+        print_info("4. Once all services are running, access NEO at: http://localhost:3000")
+        print_info("5. Create an account using Supabase authentication to start using NEO")
 
 # Then update your main() function as follows:
 
@@ -853,7 +853,7 @@ def main():
     current_step = load_progress() + 1
 
     print_banner()
-    print("This wizard will guide you through setting up Suna, an open-source generalist AI agent.\n")
+    print("This wizard will guide you through setting up NEO, an open-source generalist AI agent.\n")
 
     env_vars = load_env_data()
 
@@ -861,16 +861,16 @@ def main():
         print_step(current_step, total_steps, "Checking requirements")
         check_requirements()
         check_docker_running()
-        if not check_suna_directory():
-            print_error("This setup script must be run from the Suna repository root directory.")
+        if not check_NEO_directory():
+            print_error("This setup script must be run from the NEO repository root directory.")
             sys.exit(1)
         save_progress(current_step)
         current_step += 1
 
     if current_step <= 2:
         print_step(current_step, total_steps, "Collecting Supabase information")
-        env_vars['supabase'] = collect_supabase_info()
-        os.environ['SUPABASE_URL'] = env_vars['supabase']['SUPABASE_URL']
+        env_vars['database'] = collect_database_info()
+        os.environ['SUPABASE_URL'] = env_vars['database']['SUPABASE_URL']
         save_env_data(env_vars)
         save_progress(current_step)
         current_step += 1
@@ -905,7 +905,7 @@ def main():
 
     if current_step <= 7:
         print_step(current_step, total_steps, "Setting up Supabase")
-        setup_supabase()
+        setup_database()
         save_progress(current_step)
         current_step += 1
 
@@ -915,8 +915,8 @@ def main():
         print_info("Configuring environment files...")
         configure_backend_env(env_vars, True)
         configure_frontend_env(env_vars, True)
-        print_step(current_step, total_steps, "Starting Suna")
-        use_docker = start_suna()
+        print_step(current_step, total_steps, "Starting NEO")
+        use_docker = start_NEO()
         if not use_docker:
             configure_backend_env(env_vars, use_docker)
             configure_frontend_env(env_vars, use_docker)

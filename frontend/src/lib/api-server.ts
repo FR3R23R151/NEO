@@ -1,9 +1,9 @@
 import { Project, Thread } from '@/lib/api';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/database/server';
 
 export const getThread = async (threadId: string): Promise<Thread> => {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const database = await createClient();
+  const { data, error } = await database
     .from('threads')
     .select('*')
     .eq('thread_id', threadId)
@@ -15,10 +15,10 @@ export const getThread = async (threadId: string): Promise<Thread> => {
 };
 
 export const getProject = async (projectId: string): Promise<Project> => {
-  const supabase = await createClient();
+  const database = await createClient();
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await database
       .from('projects')
       .select('*')
       .eq('project_id', projectId)
@@ -43,7 +43,7 @@ export const getProject = async (projectId: string): Promise<Project> => {
     //     try {
     //       const {
     //         data: { session },
-    //       } = await supabase.auth.getSession();
+    //       } = await database.auth.getSession();
 
     //       // For public projects, we don't need authentication
     //       const headers: Record<string, string> = {

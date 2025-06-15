@@ -1,4 +1,4 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createServerClient, type CookieOptions } from '@database/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
 function forceLoginWithReturn(request: NextRequest) {
@@ -24,7 +24,7 @@ export const validateSession = async (request: NextRequest) => {
       },
     });
 
-    const supabase = createServerClient(
+    const database = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
@@ -73,10 +73,10 @@ export const validateSession = async (request: NextRequest) => {
     );
 
     // This will refresh session if expired - required for Server Components
-    // https://supabase.com/docs/guides/auth/server-side/nextjs
+    // https://database.com/docs/guides/auth/server-side/nextjs
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } = await database.auth.getUser();
 
     const protectedRoutes = ['/dashboard', '/invitation'];
 

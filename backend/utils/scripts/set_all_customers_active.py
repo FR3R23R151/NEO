@@ -23,7 +23,7 @@ from dotenv import load_dotenv
 # Load script-specific environment variables
 load_dotenv(".env")
 
-from services.supabase import DBConnection
+from services.database import DBConnection
 from utils.logger import logger
 
 # Semaphore to limit concurrent database connections

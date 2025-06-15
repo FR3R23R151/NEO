@@ -1,13 +1,13 @@
 import useSWR, { SWRConfiguration } from 'swr';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/database/client';
 import { GetAccountsResponse } from '@usebasejump/shared';
 
 export const useAccounts = (options?: SWRConfiguration) => {
-  const supabaseClient = createClient();
+  const databaseClient = createClient();
   return useSWR<GetAccountsResponse>(
-    !!supabaseClient && ['accounts'],
+    !!databaseClient && ['accounts'],
     async () => {
-      const { data, error } = await supabaseClient.rpc('get_accounts');
+      const { data, error } = await databaseClient.rpc('get_accounts');
 
       if (error) {
         throw new Error(error.message);

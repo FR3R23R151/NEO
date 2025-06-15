@@ -20,7 +20,7 @@ export function SecondBentoAnimation() {
             speed={1}
           >
             <Icons.boat />
-            <Icons.supabase />
+            <Icons.database />
             <Icons.figma />
           </OrbitingCircles>
 

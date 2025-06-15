@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/database/server';
 import { redirect } from 'next/navigation';
 
 async function sendWelcomeEmail(email: string, name?: string) {
@@ -40,9 +40,9 @@ export async function signIn(prevState: any, formData: FormData) {
     return { message: 'Password must be at least 6 characters' };
   }
 
-  const supabase = await createClient();
+  const database = await createClient();
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { error } = await database.auth.signInWithPassword({
     email,
     password,
   });
@@ -74,9 +74,9 @@ export async function signUp(prevState: any, formData: FormData) {
     return { message: 'Passwords do not match' };
   }
 
-  const supabase = await createClient();
+  const database = await createClient();
 
-  const { error } = await supabase.auth.signUp({
+  const { error } = await database.auth.signUp({
     email,
     password,
     options: {
@@ -90,7 +90,7 @@ export async function signUp(prevState: any, formData: FormData) {
 
   const userName = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
-  const { error: signInError, data: signInData } = await supabase.auth.signInWithPassword({
+  const { error: signInError, data: signInData } = await database.auth.signInWithPassword({
     email,
     password,
   });
@@ -118,9 +118,9 @@ export async function forgotPassword(prevState: any, formData: FormData) {
     return { message: 'Please enter a valid email address' };
   }
 
-  const supabase = await createClient();
+  const database = await createClient();
 
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+  const { error } = await database.auth.resetPasswordForEmail(email, {
     redirectTo: `${origin}/auth/reset-password`,
   });
 
@@ -146,9 +146,9 @@ export async function resetPassword(prevState: any, formData: FormData) {
     return { message: 'Passwords do not match' };
   }
 
-  const supabase = await createClient();
+  const database = await createClient();
 
-  const { error } = await supabase.auth.updateUser({
+  const { error } = await database.auth.updateUser({
     password,
   });
 
@@ -163,8 +163,8 @@ export async function resetPassword(prevState: any, formData: FormData) {
 }
 
 export async function signOut() {
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signOut();
+  const database = await createClient();
+  const { error } = await database.auth.signOut();
 
   if (error) {
     return { message: error.message || 'Could not sign out' };

@@ -46,7 +46,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/database/client';
 import { useTheme } from 'next-themes';
 
 export function NavUserWithTeams({
@@ -140,8 +140,8 @@ export function NavUserWithTeams({
   };
 
   const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    const database = createClient();
+    await database.auth.signOut();
     router.push('/auth');
   };
 

@@ -1,0 +1,156 @@
+/* NEO Design System - Modern UI/UX Theme */
+
+/* NEO Color Palette */
+:root {
+  /* Primary Brand Colors */
+  --neo-primary: #6366f1; /* Indigo 500 */
+  --neo-primary-dark: #4f46e5; /* Indigo 600 */
+  --neo-primary-light: #818cf8; /* Indigo 400 */
+  --neo-primary-50: #eef2ff;
+  --neo-primary-100: #e0e7ff;
+  --neo-primary-900: #312e81;
+
+  /* Secondary Colors */
+  --neo-secondary: #06b6d4; /* Cyan 500 */
+  --neo-secondary-dark: #0891b2; /* Cyan 600 */
+  --neo-secondary-light: #22d3ee; /* Cyan 400 */
+
+  /* Accent Colors */
+  --neo-accent: #f59e0b; /* Amber 500 */
+  --neo-accent-dark: #d97706; /* Amber 600 */
+  --neo-accent-light: #fbbf24; /* Amber 400 */
+
+  /* Success/Error/Warning */
+  --neo-success: #10b981; /* Emerald 500 */
+  --neo-error: #ef4444; /* Red 500 */
+  --neo-warning: #f59e0b; /* Amber 500 */
+
+  /* Neutral Colors - Light Mode */
+  --neo-gray-50: #f9fafb;
+  --neo-gray-100: #f3f4f6;
+  --neo-gray-200: #e5e7eb;
+  --neo-gray-300: #d1d5db;
+  --neo-gray-400: #9ca3af;
+  --neo-gray-500: #6b7280;
+  --neo-gray-600: #4b5563;
+  --neo-gray-700: #374151;
+  --neo-gray-800: #1f2937;
+  --neo-gray-900: #111827;
+
+  /* Background Colors */
+  --neo-bg-primary: #ffffff;
+  --neo-bg-secondary: #f9fafb;
+  --neo-bg-tertiary: #f3f4f6;
+  --neo-bg-accent: #eef2ff;
+
+  /* Text Colors */
+  --neo-text-primary: #111827;
+  --neo-text-secondary: #4b5563;
+  --neo-text-tertiary: #6b7280;
+  --neo-text-inverse: #ffffff;
+
+  /* Border Colors */
+  --neo-border-light: #e5e7eb;
+  --neo-border-medium: #d1d5db;
+  --neo-border-dark: #9ca3af;
+
+  /* Glassmorphism */
+  --neo-glass-bg: rgba(255, 255, 255, 0.8);
+  --neo-glass-border: rgba(255, 255, 255, 0.2);
+  --neo-glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+/* Dark Mode Colors */
+.dark {
+  /* Background Colors */
+  --neo-bg-primary: #0f172a;
+  --neo-bg-secondary: #1e293b;
+  --neo-bg-tertiary: #334155;
+  --neo-bg-accent: #1e1b4b;
+
+  /* Text Colors */
+  --neo-text-primary: #f8fafc;
+  --neo-text-secondary: #cbd5e1;
+  --neo-text-tertiary: #94a3b8;
+  --neo-text-inverse: #0f172a;
+
+  /* Border Colors */
+  --neo-border-light: #334155;
+  --neo-border-medium: #475569;
+  --neo-border-dark: #64748b;
+
+  /* Glassmorphism Dark */
+  --neo-glass-bg: rgba(15, 23, 42, 0.8);
+  --neo-glass-border: rgba(255, 255, 255, 0.1);
+  --neo-glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* NEO Component Classes */
+
+/* Glass Card */
+.neo-glass-card {
+  background: var(--neo-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--neo-glass-border);
+  box-shadow: var(--neo-glass-shadow);
+  border-radius: 12px;
+}
+
+/* Gradient Backgrounds */
+.neo-gradient-primary {
+  background: linear-gradient(135deg, var(--neo-primary) 0%, var(--neo-primary-dark) 100%);
+}
+
+.neo-gradient-secondary {
+  background: linear-gradient(135deg, var(--neo-secondary) 0%, var(--neo-secondary-dark) 100%);
+}
+
+.neo-gradient-mesh {
+  background: linear-gradient(135deg, var(--neo-primary-50) 0%, var(--neo-bg-accent) 50%, var(--neo-primary-100) 100%);
+}
+
+/* Loading Animations */
+@keyframes neo-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes neo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes neo-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes neo-slide-in-right {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes neo-scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Animation Classes */
+.neo-animate-pulse { animation: neo-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+.neo-animate-spin { animation: neo-spin 1s linear infinite; }
+.neo-animate-fade-in { animation: neo-fade-in 0.3s ease-out; }
+.neo-animate-slide-in-right { animation: neo-slide-in-right 0.3s ease-out; }
+.neo-animate-scale-in { animation: neo-scale-in 0.2s ease-out; }
+
+/* Utility Classes */
+.neo-text-gradient {
+  background: linear-gradient(135deg, var(--neo-primary) 0%, var(--neo-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.neo-shadow-glow {
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+}

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/database/server';
 import { Table, TableRow, TableBody, TableCell } from '../ui/table';
 import { Badge } from '../ui/badge';
 import TeamMemberOptions from './team-member-options';
@@ -8,13 +8,13 @@ type Props = {
 };
 
 export default async function ManageTeamMembers({ accountId }: Props) {
-  const supabaseClient = await createClient();
+  const databaseClient = await createClient();
 
-  const { data: members } = await supabaseClient.rpc('get_account_members', {
+  const { data: members } = await databaseClient.rpc('get_account_members', {
     account_id: accountId,
   });
 
-  const { data } = await supabaseClient.auth.getUser();
+  const { data } = await databaseClient.auth.getUser();
   const isPrimaryOwner = members?.find(
     (member: any) => member.user_id === data?.user?.id,
   )?.is_primary_owner;

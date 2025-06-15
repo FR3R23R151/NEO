@@ -1,5 +1,5 @@
 """
-Stripe Billing API implementation for Suna on top of Basejump. ONLY HAS SUPPOT FOR USER ACCOUNTS – no team accounts. As we are using the user_id as account_id as is the case with personal accounts. In personal accounts, the account_id equals the user_id. In team accounts, the account_id is unique.
+Stripe Billing API implementation for NEO on top of Basejump. ONLY HAS SUPPOT FOR USER ACCOUNTS – no team accounts. As we are using the user_id as account_id as is the case with personal accounts. In personal accounts, the account_id equals the user_id. In team accounts, the account_id is unique.
 
 stripe listen --forward-to localhost:8000/api/billing/webhook
 """
@@ -10,7 +10,7 @@ import stripe
 from datetime import datetime, timezone
 from utils.logger import logger
 from utils.config import config, EnvMode
-from services.supabase import DBConnection
+from services.database import DBConnection
 from utils.auth_utils import get_current_user_id_from_jwt
 from pydantic import BaseModel
 from utils.constants import MODEL_ACCESS_TIERS, MODEL_NAME_ALIASES

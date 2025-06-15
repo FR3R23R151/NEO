@@ -1,6 +1,6 @@
 services:
   api:
-    image: ghcr.io/suna-ai/suna-backend:latest
+    image: ghcr.io/NEO-ai/NEO-backend:latest
     build:
       context: .
       dockerfile: Dockerfile

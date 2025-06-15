@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/database/client';
 import { handleApiError, handleNetworkError, ErrorContext, ApiError } from './error-handler';
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
@@ -31,8 +31,8 @@ export const apiClient = {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
+      const database = createClient();
+      const { data: { session } } = await database.auth.getSession();
 
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -185,7 +185,7 @@ export const apiClient = {
   },
 };
 
-export const supabaseClient = {
+export const databaseClient = {
   async execute<T = any>(
     queryFn: () => Promise<{ data: T | null; error: any }>,
     errorContext?: ErrorContext

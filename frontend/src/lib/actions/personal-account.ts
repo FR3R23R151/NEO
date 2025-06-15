@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '../supabase/server';
+import { createClient } from '../database/server';
 
 export async function editPersonalAccountName(
   prevState: any,
@@ -8,9 +8,9 @@ export async function editPersonalAccountName(
 ) {
   const name = formData.get('name') as string;
   const accountId = formData.get('accountId') as string;
-  const supabase = await createClient();
+  const database = await createClient();
 
-  const { error } = await supabase.rpc('update_account', {
+  const { error } = await database.rpc('update_account', {
     name,
     account_id: accountId,
   });

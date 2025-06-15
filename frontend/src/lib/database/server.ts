@@ -1,22 +1,22 @@
 'use server';
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createServerClient, type CookieOptions } from '@database/ssr';
 import { cookies } from 'next/headers';
 
 export const createClient = async () => {
   const cookieStore = await cookies();
-  let supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  let databaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const databaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
   // Ensure the URL is in the proper format with http/https protocol
-  if (supabaseUrl && !supabaseUrl.startsWith('http')) {
+  if (databaseUrl && !databaseUrl.startsWith('http')) {
     // If it's just a hostname without protocol, add http://
-    supabaseUrl = `http://${supabaseUrl}`;
+    databaseUrl = `http://${databaseUrl}`;
   }
 
-  // console.log('[SERVER] Supabase URL:', supabaseUrl);
-  // console.log('[SERVER] Supabase Anon Key:', supabaseAnonKey);
+  // console.log('[SERVER] Supabase URL:', databaseUrl);
+  // console.log('[SERVER] Supabase Anon Key:', databaseAnonKey);
 
-  return createServerClient(supabaseUrl, supabaseAnonKey, {
+  return createServerClient(databaseUrl, databaseAnonKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();

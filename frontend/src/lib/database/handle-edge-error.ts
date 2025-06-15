@@ -2,7 +2,7 @@ import {
   FunctionsFetchError,
   FunctionsHttpError,
   FunctionsRelayError,
-} from '@supabase/supabase-js';
+} from '@database/database-js';
 
 export default async function handleEdgeFunctionError(error: any) {
   if (error instanceof FunctionsHttpError) {

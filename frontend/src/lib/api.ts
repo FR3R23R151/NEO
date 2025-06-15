@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/database/client';
 import { handleApiError } from './error-handler';
 
 // Get backend URL from environment variables
@@ -108,10 +108,10 @@ export interface FileInfo {
 // Project APIs
 export const getProjects = async (): Promise<Project[]> => {
   try {
-    const supabase = createClient();
+    const database = createClient();
 
     // Get the current user's ID to filter projects
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const { data: userData, error: userError } = await database.auth.getUser();
     if (userError) {
       console.error('Error getting current user:', userError);
       return [];
@@ -124,7 +124,7 @@ export const getProjects = async (): Promise<Project[]> => {
     }
 
     // Query only projects where account_id matches the current user's ID
-    const { data, error } = await supabase
+    const { data, error } = await database
       .from('projects')
       .select('*')
       .eq('account_id', userData.user.id);
@@ -173,10 +173,10 @@ export const getProjects = async (): Promise<Project[]> => {
 };
 
 export const getProject = async (projectId: string): Promise<Project> => {
-  const supabase = createClient();
+  const database = createClient();
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await database
       .from('projects')
       .select('*')
       .eq('project_id', projectId)
@@ -199,7 +199,7 @@ export const getProject = async (projectId: string): Promise<Project> => {
         try {
           const {
             data: { session },
-          } = await supabase.auth.getSession();
+          } = await database.auth.getSession();
 
           // For public projects, we don't need authentication
           const headers: Record<string, string> = {
@@ -269,11 +269,11 @@ export const createProject = async (
   projectData: { name: string; description: string },
   accountId?: string,
 ): Promise<Project> => {
-  const supabase = createClient();
+  const database = createClient();
 
   // If accountId is not provided, we'll need to get the user's ID
   if (!accountId) {
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const { data: userData, error: userError } = await database.auth.getUser();
 
     if (userError) throw userError;
     if (!userData.user)
@@ -283,7 +283,7 @@ export const createProject = async (
     accountId = userData.user.id;
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await database
     .from('projects')
     .insert({
       name: projectData.name,
@@ -313,7 +313,7 @@ export const updateProject = async (
   projectId: string,
   data: Partial<Project>,
 ): Promise<Project> => {
-  const supabase = createClient();
+  const database = createClient();
 
   console.log('Updating project with ID:', projectId);
   console.log('Update data:', data);
@@ -324,7 +324,7 @@ export const updateProject = async (
     throw new Error('Cannot update project: Invalid project ID');
   }
 
-  const { data: updatedData, error } = await supabase
+  const { data: updatedData, error } = await database
     .from('projects')
     .update(data)
     .eq('project_id', projectId)
@@ -377,8 +377,8 @@ export const updateProject = async (
 };
 
 export const deleteProject = async (projectId: string): Promise<void> => {
-  const supabase = createClient();
-  const { error } = await supabase
+  const database = createClient();
+  const { error } = await database
     .from('projects')
     .delete()
     .eq('project_id', projectId);
@@ -391,10 +391,10 @@ export const deleteProject = async (projectId: string): Promise<void> => {
 
 // Thread APIs
 export const getThreads = async (projectId?: string): Promise<Thread[]> => {
-  const supabase = createClient();
+  const database = createClient();
 
   // Get the current user's ID to filter threads
-  const { data: userData, error: userError } = await supabase.auth.getUser();
+  const { data: userData, error: userError } = await database.auth.getUser();
   if (userError) {
     console.error('Error getting current user:', userError);
     return [];
@@ -406,7 +406,7 @@ export const getThreads = async (projectId?: string): Promise<Thread[]> => {
     return [];
   }
 
-  let query = supabase.from('threads').select('*');
+  let query = database.from('threads').select('*');
 
   // Always filter by the current user's account ID
   query = query.eq('account_id', userData.user.id);
@@ -439,8 +439,8 @@ export const getThreads = async (projectId?: string): Promise<Thread[]> => {
 };
 
 export const getThread = async (threadId: string): Promise<Thread> => {
-  const supabase = createClient();
-  const { data, error } = await supabase
+  const database = createClient();
+  const { data, error } = await database
     .from('threads')
     .select('*')
     .eq('thread_id', threadId)
@@ -455,17 +455,17 @@ export const getThread = async (threadId: string): Promise<Thread> => {
 };
 
 export const createThread = async (projectId: string): Promise<Thread> => {
-  const supabase = createClient();
+  const database = createClient();
 
   // If user is not logged in, redirect to login
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await database.auth.getUser();
   if (!user) {
     throw new Error('You must be logged in to create a thread');
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await database
     .from('threads')
     .insert({
       project_id: projectId,
@@ -485,7 +485,7 @@ export const addUserMessage = async (
   threadId: string,
   content: string,
 ): Promise<void> => {
-  const supabase = createClient();
+  const database = createClient();
 
   // Format the message in the format the LLM expects - keep it simple with only required fields
   const message = {
@@ -494,7 +494,7 @@ export const addUserMessage = async (
   };
 
   // Insert the message into the messages table
-  const { error } = await supabase.from('messages').insert({
+  const { error } = await database.from('messages').insert({
     thread_id: threadId,
     type: 'user',
     is_llm_message: true,
@@ -509,9 +509,9 @@ export const addUserMessage = async (
 };
 
 export const getMessages = async (threadId: string): Promise<Message[]> => {
-  const supabase = createClient();
+  const database = createClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await database
     .from('messages')
     .select('*')
     .eq('thread_id', threadId)
@@ -542,10 +542,10 @@ export const startAgent = async (
   },
 ): Promise<{ agent_run_id: string }> => {
   try {
-    const supabase = createClient();
+    const database = createClient();
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await database.auth.getSession();
 
     if (!session?.access_token) {
       throw new NoAccessTokenAvailableError();
@@ -678,10 +678,10 @@ export const stopAgent = async (agentRunId: string): Promise<void> => {
     activeStreams.delete(agentRunId);
   }
 
-  const supabase = createClient();
+  const database = createClient();
   const {
     data: { session },
-  } = await supabase.auth.getSession();
+  } = await database.auth.getSession();
 
   if (!session?.access_token) {
     const authError = new NoAccessTokenAvailableError();
@@ -718,10 +718,10 @@ export const getAgentStatus = async (agentRunId: string): Promise<AgentRun> => {
   }
 
   try {
-    const supabase = createClient();
+    const database = createClient();
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await database.auth.getSession();
 
     if (!session?.access_token) {
       console.error('[API] No access token available for getAgentStatus');
@@ -776,10 +776,10 @@ export const getAgentStatus = async (agentRunId: string): Promise<AgentRun> => {
 
 export const getAgentRuns = async (threadId: string): Promise<AgentRun[]> => {
   try {
-    const supabase = createClient();
+    const database = createClient();
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await database.auth.getSession();
 
     if (!session?.access_token) {
       throw new NoAccessTokenAvailableError();
@@ -884,10 +884,10 @@ export const streamAgent = (
         return;
       }
 
-      const supabase = createClient();
+      const database = createClient();
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await database.auth.getSession();
 
       if (!session?.access_token) {
         const authError = new NoAccessTokenAvailableError();
@@ -1106,10 +1106,10 @@ export const createSandboxFile = async (
   content: string,
 ): Promise<void> => {
   try {
-    const supabase = createClient();
+    const database = createClient();
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await database.auth.getSession();
 
     // Use FormData to handle both text and binary content more reliably
     const formData = new FormData();
@@ -1159,10 +1159,10 @@ export const createSandboxFileJson = async (
   content: string,
 ): Promise<void> => {
   try {
-    const supabase = createClient();
+    const database = createClient();
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await database.auth.getSession();
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -1224,10 +1224,10 @@ export const listSandboxFiles = async (
   path: string,
 ): Promise<FileInfo[]> => {
   try {
-    const supabase = createClient();
+    const database = createClient();
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await database.auth.getSession();
 
     const url = new URL(`${API_URL}/sandboxes/${sandboxId}/files`);
     
@@ -1273,10 +1273,10 @@ export const getSandboxFileContent = async (
   path: string,
 ): Promise<string | Blob> => {
   try {
-    const supabase = createClient();
+    const database = createClient();
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await database.auth.getSession();
 
     const url = new URL(`${API_URL}/sandboxes/${sandboxId}/files/content`);
     
@@ -1328,10 +1328,10 @@ export const getSandboxFileContent = async (
 // Function to get public projects
 export const getPublicProjects = async (): Promise<Project[]> => {
   try {
-    const supabase = createClient();
+    const database = createClient();
 
     // Query for threads that are marked as public
-    const { data: publicThreads, error: threadsError } = await supabase
+    const { data: publicThreads, error: threadsError } = await database
       .from('threads')
       .select('project_id')
       .eq('is_public', true);
@@ -1357,7 +1357,7 @@ export const getPublicProjects = async (): Promise<Project[]> => {
     }
 
     // Get the projects that have public threads
-    const { data: projects, error: projectsError } = await supabase
+    const { data: projects, error: projectsError } = await database
       .from('projects')
       .select('*')
       .in('project_id', publicProjectIds);
@@ -1408,10 +1408,10 @@ export const initiateAgent = async (
   formData: FormData,
 ): Promise<InitiateAgentResponse> => {
   try {
-    const supabase = createClient();
+    const database = createClient();
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await database.auth.getSession();
 
     if (!session?.access_token) {
       throw new NoAccessTokenAvailableError();
@@ -1580,10 +1580,10 @@ export const createCheckoutSession = async (
   request: CreateCheckoutSessionRequest,
 ): Promise<CreateCheckoutSessionResponse> => {
   try {
-    const supabase = createClient();
+    const database = createClient();
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await database.auth.getSession();
 
     if (!session?.access_token) {
       throw new NoAccessTokenAvailableError();
@@ -1647,10 +1647,10 @@ export const createPortalSession = async (
   request: CreatePortalSessionRequest,
 ): Promise<{ url: string }> => {
   try {
-    const supabase = createClient();
+    const database = createClient();
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await database.auth.getSession();
 
     if (!session?.access_token) {
       throw new NoAccessTokenAvailableError();
@@ -1689,10 +1689,10 @@ export const createPortalSession = async (
 
 export const getSubscription = async (): Promise<SubscriptionStatus> => {
   try {
-    const supabase = createClient();
+    const database = createClient();
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await database.auth.getSession();
 
     if (!session?.access_token) {
       throw new NoAccessTokenAvailableError();
@@ -1731,10 +1731,10 @@ export const getSubscription = async (): Promise<SubscriptionStatus> => {
 
 export const getAvailableModels = async (): Promise<AvailableModelsResponse> => {
   try {
-    const supabase = createClient();
+    const database = createClient();
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await database.auth.getSession();
 
     if (!session?.access_token) {
       throw new NoAccessTokenAvailableError();
@@ -1774,10 +1774,10 @@ export const getAvailableModels = async (): Promise<AvailableModelsResponse> => 
 
 export const checkBillingStatus = async (): Promise<BillingStatusResponse> => {
   try {
-    const supabase = createClient();
+    const database = createClient();
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await database.auth.getSession();
 
     if (!session?.access_token) {
       throw new NoAccessTokenAvailableError();
@@ -1821,10 +1821,10 @@ export interface TranscriptionResponse {
 // Transcription API Functions
 export const transcribeAudio = async (audioFile: File): Promise<TranscriptionResponse> => {
   try {
-    const supabase = createClient();
+    const database = createClient();
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await database.auth.getSession();
 
     if (!session?.access_token) {
       throw new NoAccessTokenAvailableError();
@@ -1867,10 +1867,10 @@ export const transcribeAudio = async (audioFile: File): Promise<TranscriptionRes
 };
 
 export const getAgentBuilderChatHistory = async (agentId: string): Promise<{messages: Message[], thread_id: string | null}> => {
-  const supabase = createClient();
+  const database = createClient();
   const {
     data: { session },
-  } = await supabase.auth.getSession();
+  } = await database.auth.getSession();
 
   if (!session?.access_token) {
     throw new NoAccessTokenAvailableError();

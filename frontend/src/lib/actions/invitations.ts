@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '../supabase/server';
+import { createClient } from '../database/server';
 import { redirect } from 'next/navigation';
 
 export async function createInvitation(
@@ -12,9 +12,9 @@ export async function createInvitation(
   const accountId = formData.get('accountId') as string;
   const accountRole = formData.get('accountRole') as string;
 
-  const supabase = await createClient();
+  const database = await createClient();
 
-  const { data, error } = await supabase.rpc('create_invitation', {
+  const { data, error } = await database.rpc('create_invitation', {
     account_id: accountId,
     invitation_type: invitationType,
     account_role: accountRole,
@@ -37,9 +37,9 @@ export async function deleteInvitation(prevState: any, formData: FormData) {
   const invitationId = formData.get('invitationId') as string;
   const returnPath = formData.get('returnPath') as string;
 
-  const supabase = await createClient();
+  const database = await createClient();
 
-  const { error } = await supabase.rpc('delete_invitation', {
+  const { error } = await database.rpc('delete_invitation', {
     invitation_id: invitationId,
   });
 
@@ -54,9 +54,9 @@ export async function deleteInvitation(prevState: any, formData: FormData) {
 export async function acceptInvitation(prevState: any, formData: FormData) {
   const token = formData.get('token') as string;
 
-  const supabase = await createClient();
+  const database = await createClient();
 
-  const { error, data } = await supabase.rpc('accept_invitation', {
+  const { error, data } = await database.rpc('accept_invitation', {
     lookup_invitation_token: token,
   });
 

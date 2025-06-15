@@ -1,4 +1,23 @@
 services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: neo_db
+      POSTGRES_USER: neo_user
+      POSTGRES_PASSWORD: neo_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/database/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neo_user -d neo_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
   redis:
     image: redis:7-alpine
     ports:
@@ -13,11 +32,33 @@ services:
       timeout: 5s
       retries: 3
 
+  # MinIO Object Storage
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: neo_minio
+      MINIO_ROOT_PASSWORD: neo_minio_password
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # RabbitMQ Message Queue
   rabbitmq:
-    image: rabbitmq
+    image: rabbitmq:3-management-alpine
     ports:
       - "5672:5672"
       - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: neo_rabbit
+      RABBITMQ_DEFAULT_PASS: neo_rabbit_password
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     restart: unless-stopped
@@ -28,6 +69,29 @@ services:
       retries: 5
       start_period: 10s
 
+  # NEO Isolator Service
+  isolator:
+    build:
+      context: ./backend/isolator
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - isolator_workspaces:/app/workspaces
+    environment:
+      - ISOLATOR_PORT=8001
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - WORKSPACE_DIR=/app/workspaces
+    privileged: true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend API
   backend:
     build:
       context: ./backend
@@ -39,20 +103,32 @@ services:
     env_file:
       - ./backend/.env
     environment:
+      - DATABASE_URL=postgresql://neo_user:neo_password@postgres:5432/neo_db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=
       - REDIS_SSL=False
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=neo_rabbit
+      - RABBITMQ_PASSWORD=neo_rabbit_password
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=neo_minio
+      - MINIO_SECRET_KEY=neo_minio_password
+      - ISOLATOR_URL=http://isolator:8001
     depends_on:
+      postgres:
+        condition: service_healthy
       redis:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      worker:
-        condition: service_started
+      minio:
+        condition: service_healthy
+      isolator:
+        condition: service_healthy
 
+  # Background Worker
   worker:
     build:
       context: ./backend
@@ -63,18 +139,32 @@ services:
     env_file:
       - ./backend/.env
     environment:
+      - DATABASE_URL=postgresql://neo_user:neo_password@postgres:5432/neo_db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=
       - REDIS_SSL=False
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=neo_rabbit
+      - RABBITMQ_PASSWORD=neo_rabbit_password
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=neo_minio
+      - MINIO_SECRET_KEY=neo_minio_password
+      - ISOLATOR_URL=http://isolator:8001
     depends_on:
+      postgres:
+        condition: service_healthy
       redis:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      minio:
+        condition: service_healthy
+      isolator:
+        condition: service_healthy
 
+  # Frontend
   frontend:
     init: true
     build:
@@ -86,10 +176,14 @@ services:
       - ./frontend/.env.local:/app/.env.local:ro
     environment:
       - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
     command: ["npm", "run", "start"]
     depends_on:
       - backend
 
 volumes:
+  postgres_data:
   redis_data:
   rabbitmq_data:
+  minio_data:
+  isolator_workspaces:

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/database/client";
 import { isFlagEnabled } from "@/lib/feature-flags";
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
@@ -103,8 +103,8 @@ export const getAgents = async (params: AgentsParams = {}): Promise<AgentsRespon
     if (!agentPlaygroundEnabled) {
       throw new Error('Custom agents is not enabled');
     }
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    const database = createClient();
+    const { data: { session } } = await database.auth.getSession();
 
     if (!session) {
       throw new Error('You must be logged in to get agents');
@@ -151,8 +151,8 @@ export const getAgent = async (agentId: string): Promise<Agent> => {
     if (!agentPlaygroundEnabled) {
       throw new Error('Custom agents is not enabled');
     }
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    const database = createClient();
+    const { data: { session } } = await database.auth.getSession();
 
     if (!session) {
       throw new Error('You must be logged in to get agent details');
@@ -186,8 +186,8 @@ export const createAgent = async (agentData: AgentCreateRequest): Promise<Agent>
     if (!agentPlaygroundEnabled) {
       throw new Error('Custom agents is not enabled');
     }
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    const database = createClient();
+    const { data: { session } } = await database.auth.getSession();
 
     if (!session) {
       throw new Error('You must be logged in to create an agent');
@@ -222,8 +222,8 @@ export const updateAgent = async (agentId: string, agentData: AgentUpdateRequest
     if (!agentPlaygroundEnabled) {
       throw new Error('Custom agents is not enabled');
     }
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    const database = createClient();
+    const { data: { session } } = await database.auth.getSession();
 
     if (!session) {
       throw new Error('You must be logged in to update an agent');
@@ -258,8 +258,8 @@ export const deleteAgent = async (agentId: string): Promise<void> => {
     if (!agentPlaygroundEnabled) {
       throw new Error('Custom agents is not enabled');
     }
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    const database = createClient();
+    const { data: { session } } = await database.auth.getSession();
 
     if (!session) {
       throw new Error('You must be logged in to delete an agent');
@@ -291,8 +291,8 @@ export const getThreadAgent = async (threadId: string): Promise<ThreadAgentRespo
     if (!agentPlaygroundEnabled) {
       throw new Error('Custom agents is not enabled');
     }
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    const database = createClient();
+    const { data: { session } } = await database.auth.getSession();
 
     if (!session) {
       throw new Error('You must be logged in to get thread agent');
@@ -326,8 +326,8 @@ export const getAgentBuilderChatHistory = async (agentId: string): Promise<{mess
     if (!agentPlaygroundEnabled) {
       throw new Error('Custom agents is not enabled');
     }
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    const database = createClient();
+    const { data: { session } } = await database.auth.getSession();
 
     if (!session) {
       throw new Error('You must be logged in to get agent builder chat history');
@@ -397,8 +397,8 @@ export const startAgentBuilderChat = async (
     if (!agentPlaygroundEnabled) {
       throw new Error('Custom agents is not enabled');
     }
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    const database = createClient();
+    const { data: { session } } = await database.auth.getSession();
 
     if (!session) {
       throw new Error('You must be logged in to use the agent builder');

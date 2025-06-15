@@ -1,4 +1,4 @@
-# Suna Backend
+# NEO Backend
 
 ## Running the backend
 

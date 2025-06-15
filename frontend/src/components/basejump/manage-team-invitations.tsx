@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from '../ui/card';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/database/server';
 import { Table, TableRow, TableBody, TableCell } from '../ui/table';
 import { Badge } from '../ui/badge';
 import CreateTeamInvitationButton from './create-team-invitation-button';
@@ -17,9 +17,9 @@ type Props = {
 };
 
 export default async function ManageTeamInvitations({ accountId }: Props) {
-  const supabaseClient = await createClient();
+  const databaseClient = await createClient();
 
-  const { data: invitations } = await supabaseClient.rpc(
+  const { data: invitations } = await databaseClient.rpc(
     'get_account_invitations',
     {
       account_id: accountId,

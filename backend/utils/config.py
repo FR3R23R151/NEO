@@ -125,10 +125,19 @@ class Configuration:
     # Model configuration
     MODEL_TO_USE: Optional[str] = "anthropic/claude-3-7-sonnet-latest"
     
-    # Supabase configuration
-    SUPABASE_URL: str
-    SUPABASE_ANON_KEY: str
-    SUPABASE_SERVICE_ROLE_KEY: str
+    # Database configuration (replaces Supabase)
+    DATABASE_URL: Optional[str] = None
+    DATABASE_HOST: str = "localhost"
+    DATABASE_PORT: int = 5432
+    DATABASE_NAME: str = "neo_db"
+    DATABASE_USER: str = "neo_user"
+    DATABASE_PASSWORD: str = "neo_password"
+    
+    # JWT Authentication configuration
+    JWT_SECRET: str = "neo-jwt-secret-change-in-production"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 30
     
     # Redis configuration
     REDIS_HOST: str
@@ -136,10 +145,15 @@ class Configuration:
     REDIS_PASSWORD: str
     REDIS_SSL: bool = True
     
-    # Daytona sandbox configuration
-    DAYTONA_API_KEY: str
-    DAYTONA_SERVER_URL: str
-    DAYTONA_TARGET: str
+    # NEO Isolator configuration (replaces Daytona)
+    ISOLATOR_URL: str = "http://localhost:8001"
+    ISOLATOR_API_KEY: Optional[str] = None
+    
+    # MinIO Storage configuration (replaces Supabase Storage)
+    MINIO_ENDPOINT: str = "localhost:9000"
+    MINIO_ACCESS_KEY: str = "neo_minio"
+    MINIO_SECRET_KEY: str = "neo_minio_password"
+    MINIO_SECURE: bool = False
     
     # Search and other API keys
     TAVILY_API_KEY: str
@@ -159,7 +173,7 @@ class Configuration:
     STRIPE_PRODUCT_ID_STAGING: str = 'prod_SCgIj3G7yPOAWY'
     
     # Sandbox configuration
-    SANDBOX_IMAGE_NAME = "kortix/suna:0.1.3"
+    SANDBOX_IMAGE_NAME = "kortix/NEO:0.1.3"
     SANDBOX_ENTRYPOINT = "/usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf"
 
     # LangFuse configuration

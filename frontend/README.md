@@ -1,4 +1,4 @@
-# Suna frontend
+# NEO frontend
 
 ## Getting Started
 

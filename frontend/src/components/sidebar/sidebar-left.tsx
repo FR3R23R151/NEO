@@ -21,7 +21,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/database/client';
 import {
   Tooltip,
   TooltipContent,
@@ -56,8 +56,8 @@ export function SidebarLeft({
   // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
-      const supabase = createClient();
-      const { data } = await supabase.auth.getUser();
+      const database = createClient();
+      const { data } = await database.auth.getUser();
 
       if (data.user) {
         setUser({
@@ -109,7 +109,7 @@ export function SidebarLeft({
           </Link>
           {state !== 'collapsed' && (
             <div className="ml-2 transition-all duration-200 ease-in-out whitespace-nowrap">
-              {/* <span className="font-semibold"> SUNA</span> */}
+              {/* <span className="font-semibold"> NEO</span> */}
             </div>
           )}
           <div className="ml-auto flex items-center gap-2">

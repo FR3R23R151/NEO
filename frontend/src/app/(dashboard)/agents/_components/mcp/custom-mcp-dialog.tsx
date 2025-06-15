@@ -9,7 +9,7 @@ import { Loader2, AlertCircle, CheckCircle2, Zap, Globe, Code, ChevronRight, Spa
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/database/client';
 import { Input } from '@/components/ui/input';
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
@@ -70,8 +70,8 @@ export const CustomMCPDialog: React.FC<CustomMCPDialogProps> = ({
         setServerName(manualServerName.trim());
       }
 
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
+      const database = createClient();
+      const { data: { session } } = await database.auth.getSession();
 
       if (!session) {
         throw new Error('You must be logged in to discover tools');

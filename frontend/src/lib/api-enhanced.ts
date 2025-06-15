@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/client';
-import { backendApi, supabaseClient } from './api-client';
+import { createClient } from '@/lib/database/client';
+import { backendApi, databaseClient } from './api-client';
 import { handleApiSuccess } from './error-handler';
 import { 
   Project, 
@@ -22,10 +22,10 @@ export * from './api';
 
 export const projectsApi = {
   async getAll(): Promise<Project[]> {
-    const result = await supabaseClient.execute(
+    const result = await databaseClient.execute(
       async () => {
-        const supabase = createClient();
-        const { data: userData, error: userError } = await supabase.auth.getUser();
+        const database = createClient();
+        const { data: userData, error: userError } = await database.auth.getUser();
         
         if (userError) {
           return { data: null, error: userError };
@@ -35,7 +35,7 @@ export const projectsApi = {
           return { data: [], error: null };
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await database
           .from('projects')
           .select('*')
           .eq('account_id', userData.user.id);
@@ -71,10 +71,10 @@ export const projectsApi = {
   },
 
   async getById(projectId: string): Promise<Project | null> {
-    const result = await supabaseClient.execute(
+    const result = await databaseClient.execute(
       async () => {
-        const supabase = createClient();
-        const { data, error } = await supabase
+        const database = createClient();
+        const { data, error } = await database
           .from('projects')
           .select('*')
           .eq('project_id', projectId)
@@ -119,18 +119,18 @@ export const projectsApi = {
   },
 
   async create(projectData: { name: string; description: string }, accountId?: string): Promise<Project | null> {
-    const result = await supabaseClient.execute(
+    const result = await databaseClient.execute(
       async () => {
-        const supabase = createClient();
+        const database = createClient();
         
         if (!accountId) {
-          const { data: userData, error: userError } = await supabase.auth.getUser();
+          const { data: userData, error: userError } = await database.auth.getUser();
           if (userError) return { data: null, error: userError };
           if (!userData.user) return { data: null, error: new Error('You must be logged in to create a project') };
           accountId = userData.user.id;
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await database
           .from('projects')
           .insert({
             name: projectData.name,
@@ -164,10 +164,10 @@ export const projectsApi = {
       throw new Error('Cannot update project: Invalid project ID');
     }
 
-    const result = await supabaseClient.execute(
+    const result = await databaseClient.execute(
       async () => {
-        const supabase = createClient();
-        const { data: updatedData, error } = await supabase
+        const database = createClient();
+        const { data: updatedData, error } = await database
           .from('projects')
           .update(data)
           .eq('project_id', projectId)
@@ -215,10 +215,10 @@ export const projectsApi = {
   },
 
   async delete(projectId: string): Promise<boolean> {
-    const result = await supabaseClient.execute(
+    const result = await databaseClient.execute(
       async () => {
-        const supabase = createClient();
-        const { error } = await supabase
+        const database = createClient();
+        const { error } = await database
           .from('projects')
           .delete()
           .eq('project_id', projectId);
@@ -233,15 +233,15 @@ export const projectsApi = {
 
 export const threadsApi = {
   async getAll(projectId?: string): Promise<Thread[]> {
-    const result = await supabaseClient.execute(
+    const result = await databaseClient.execute(
       async () => {
-        const supabase = createClient();
-        const { data: userData, error: userError } = await supabase.auth.getUser();
+        const database = createClient();
+        const { data: userData, error: userError } = await database.auth.getUser();
         
         if (userError) return { data: null, error: userError };
         if (!userData.user) return { data: [], error: null };
 
-        let query = supabase.from('threads').select('*').eq('account_id', userData.user.id);
+        let query = database.from('threads').select('*').eq('account_id', userData.user.id);
         
         if (projectId) {
           query = query.eq('project_id', projectId);
@@ -267,10 +267,10 @@ export const threadsApi = {
   },
 
   async getById(threadId: string): Promise<Thread | null> {
-    const result = await supabaseClient.execute(
+    const result = await databaseClient.execute(
       async () => {
-        const supabase = createClient();
-        const { data, error } = await supabase
+        const database = createClient();
+        const { data, error } = await database
           .from('threads')
           .select('*')
           .eq('thread_id', threadId)
@@ -285,16 +285,16 @@ export const threadsApi = {
   },
 
   async create(projectId: string): Promise<Thread | null> {
-    const result = await supabaseClient.execute(
+    const result = await databaseClient.execute(
       async () => {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const database = createClient();
+        const { data: { user } } = await database.auth.getUser();
         
         if (!user) {
           return { data: null, error: new Error('You must be logged in to create a thread') };
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await database
           .from('threads')
           .insert({
             project_id: projectId,
