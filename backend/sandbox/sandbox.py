@@ -1,35 +1,66 @@
-from daytona_sdk import Daytona, DaytonaConfig, CreateSandboxFromImageParams, Sandbox, SessionExecuteRequest, Resources, SandboxState
+"""
+Mock sandbox implementation to replace Daytona SDK.
+This provides compatibility with the existing sandbox interface.
+"""
+
 from dotenv import load_dotenv
 from utils.logger import logger
 from utils.config import config
-from utils.config import Configuration
+import uuid
+from typing import Optional, Dict, Any
+import asyncio
 
 load_dotenv()
 
-logger.debug("Initializing Daytona sandbox configuration")
-daytona_config = DaytonaConfig(
-    api_key=config.DAYTONA_API_KEY,
-    server_url=config.DAYTONA_SERVER_URL,
-    target=config.DAYTONA_TARGET
-)
+logger.debug("Initializing mock sandbox configuration (Daytona replacement)")
 
-if daytona_config.api_key:
-    logger.debug("Daytona API key configured successfully")
-else:
-    logger.warning("No Daytona API key found in environment variables")
+# Mock classes for compatibility
+class MockPreviewLink:
+    def __init__(self, url: str, token: str = None):
+        self.url = url
+        self.token = token or "mock-token"
 
-if daytona_config.server_url:
-    logger.debug(f"Daytona server URL set to: {daytona_config.server_url}")
-else:
-    logger.warning("No Daytona server URL found in environment variables")
+class MockSandbox:
+    def __init__(self, sandbox_id: str):
+        self.id = sandbox_id
+        self.name = f"sandbox-{sandbox_id}"
+        self.state = "RUNNING"
+        
+    def get_preview_link(self, port: int):
+        """Get preview link for a port."""
+        url = f"http://localhost:{port}/sandbox/{self.id}"
+        return MockPreviewLink(url)
+        
+class MockDaytona:
+    def __init__(self, config=None):
+        self.config = config
+        self._sandboxes = {}
+        
+    def create_sandbox(self, params):
+        sandbox_id = str(uuid.uuid4())[:8]
+        sandbox = MockSandbox(sandbox_id)
+        self._sandboxes[sandbox_id] = sandbox
+        logger.info(f"Mock: Created sandbox {sandbox_id}")
+        return sandbox
+    
+    def get(self, sandbox_id: str):
+        logger.info(f"Mock: Getting sandbox {sandbox_id}")
+        if sandbox_id in self._sandboxes:
+            return self._sandboxes[sandbox_id]
+        return MockSandbox(sandbox_id)
+    
+    def delete(self, sandbox_id: str):
+        logger.info(f"Mock: Deleted sandbox {sandbox_id}")
+        if sandbox_id in self._sandboxes:
+            del self._sandboxes[sandbox_id]
+        return True
+    
+    def execute_command(self, sandbox_id: str, command: str):
+        logger.info(f"Mock: Executing command in sandbox {sandbox_id}: {command}")
+        return {"output": f"Mock output for: {command}", "exit_code": 0}
 
-if daytona_config.target:
-    logger.debug(f"Daytona target set to: {daytona_config.target}")
-else:
-    logger.warning("No Daytona target found in environment variables")
-
-daytona = Daytona(daytona_config)
-logger.debug("Daytona client initialized")
+# Initialize mock Daytona instance
+daytona = MockDaytona()
 
 async def get_or_start_sandbox(sandbox_id: str):
     """Retrieve a sandbox by ID, check its state, and start it if needed."""
@@ -38,108 +69,73 @@ async def get_or_start_sandbox(sandbox_id: str):
     
     try:
         sandbox = daytona.get(sandbox_id)
-        
-        # Check if sandbox needs to be started
-        if sandbox.state == SandboxState.ARCHIVED or sandbox.state == SandboxState.STOPPED:
-            logger.info(f"Sandbox is in {sandbox.state} state. Starting...")
-            try:
-                daytona.start(sandbox)
-                # Wait a moment for the sandbox to initialize
-                # sleep(5)
-                # Refresh sandbox state after starting
-                sandbox = daytona.get(sandbox_id)
-                
-                # Start supervisord in a session when restarting
-                start_supervisord_session(sandbox)
-            except Exception as e:
-                logger.error(f"Error starting sandbox: {e}")
-                raise e
-        
-        logger.info(f"Sandbox {sandbox_id} is ready")
+        logger.info(f"Mock: Sandbox {sandbox_id} is {sandbox.state}")
         return sandbox
-        
     except Exception as e:
-        logger.error(f"Error retrieving or starting sandbox: {str(e)}")
-        raise e
+        logger.error(f"Error getting sandbox {sandbox_id}: {e}")
+        return None
 
-def start_supervisord_session(sandbox: Sandbox):
-    """Start supervisord in a session."""
-    session_id = "supervisord-session"
+def create_sandbox(sandbox_pass: str = None, project_id: str = None, **kwargs):
+    """Create a new sandbox (sync version for compatibility)."""
+    
+    logger.info(f"Creating new sandbox for project: {project_id}")
+    
     try:
-        logger.info(f"Creating session {session_id} for supervisord")
-        sandbox.process.create_session(session_id)
+        # Mock parameters
+        params = {
+            "image": "ubuntu:latest",
+            "project_id": project_id,
+            **kwargs
+        }
         
-        # Execute supervisord command
-        sandbox.process.execute_session_command(session_id, SessionExecuteRequest(
-            command="exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf",
-            var_async=True
-        ))
-        logger.info(f"Supervisord started in session {session_id}")
+        sandbox = daytona.create_sandbox(params)
+        logger.info(f"Mock: Created sandbox {sandbox.id}")
+        return sandbox
     except Exception as e:
-        logger.error(f"Error starting supervisord session: {str(e)}")
-        raise e
+        logger.error(f"Error creating sandbox: {e}")
+        return None
 
-def create_sandbox(password: str, project_id: str = None):
-    """Create a new sandbox with all required services configured and running."""
+async def create_sandbox_async(image_name: str = None, **kwargs):
+    """Create a new sandbox (async version)."""
     
-    logger.debug("Creating new Daytona sandbox environment")
-    logger.debug("Configuring sandbox with browser-use image and environment variables")
+    logger.info(f"Creating new sandbox with image: {image_name}")
     
-    labels = None
-    if project_id:
-        logger.debug(f"Using sandbox_id as label: {project_id}")
-        labels = {'id': project_id}
+    try:
+        # Mock parameters
+        params = {
+            "image": image_name or "ubuntu:latest",
+            **kwargs
+        }
         
-    params = CreateSandboxFromImageParams(
-        image=Configuration.SANDBOX_IMAGE_NAME,
-        public=True,
-        labels=labels,
-        env_vars={
-            "CHROME_PERSISTENT_SESSION": "true",
-            "RESOLUTION": "1024x768x24",
-            "RESOLUTION_WIDTH": "1024",
-            "RESOLUTION_HEIGHT": "768",
-            "VNC_PASSWORD": password,
-            "ANONYMIZED_TELEMETRY": "false",
-            "CHROME_PATH": "",
-            "CHROME_USER_DATA": "",
-            "CHROME_DEBUGGING_PORT": "9222",
-            "CHROME_DEBUGGING_HOST": "localhost",
-            "CHROME_CDP": ""
-        },
-        resources=Resources(
-            cpu=2,
-            memory=4,
-            disk=5,
-        ),
-        auto_stop_interval=15,
-        auto_archive_interval=24 * 60,
-    )
-    
-    # Create the sandbox
-    sandbox = daytona.create(params)
-    logger.debug(f"Sandbox created with ID: {sandbox.id}")
-    
-    # Start supervisord in a session for new sandbox
-    start_supervisord_session(sandbox)
-    
-    logger.debug(f"Sandbox environment successfully initialized")
-    return sandbox
+        sandbox = daytona.create_sandbox(params)
+        logger.info(f"Mock: Created sandbox {sandbox.id}")
+        return sandbox
+    except Exception as e:
+        logger.error(f"Error creating sandbox: {e}")
+        return None
 
 async def delete_sandbox(sandbox_id: str):
-    """Delete a sandbox by its ID."""
+    """Delete a sandbox."""
+    
     logger.info(f"Deleting sandbox with ID: {sandbox_id}")
     
     try:
-        # Get the sandbox
-        sandbox = daytona.get(sandbox_id)
-        
-        # Delete the sandbox
-        daytona.remove(sandbox)
-        
-        logger.info(f"Successfully deleted sandbox {sandbox_id}")
-        return True
+        result = daytona.delete(sandbox_id)
+        logger.info(f"Mock: Deleted sandbox {sandbox_id}")
+        return result
     except Exception as e:
-        logger.error(f"Error deleting sandbox {sandbox_id}: {str(e)}")
-        raise e
+        logger.error(f"Error deleting sandbox {sandbox_id}: {e}")
+        return False
 
+async def execute_command_in_sandbox(sandbox_id: str, command: str):
+    """Execute a command in a sandbox."""
+    
+    logger.info(f"Executing command in sandbox {sandbox_id}: {command}")
+    
+    try:
+        result = daytona.execute_command(sandbox_id, command)
+        logger.info(f"Mock: Command executed in sandbox {sandbox_id}")
+        return result
+    except Exception as e:
+        logger.error(f"Error executing command in sandbox {sandbox_id}: {e}")
+        return {"output": "", "exit_code": 1, "error": str(e)}

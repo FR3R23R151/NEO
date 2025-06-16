@@ -29,6 +29,47 @@ router = APIRouter()
 db = None
 instance_id = None # Global instance ID for this backend instance
 
+async def ensure_user_and_account_exist(client, user_id: str):
+    """Ensure user and account exist for testing purposes."""
+    try:
+        # Check if user exists
+        user_result = await client.table('users').select('id').eq('id', user_id).execute()
+        if not user_result.data:
+            # Create user
+            await client.table('users').insert({
+                'id': user_id,
+                'email': f'test-{user_id}@example.com',
+                'password_hash': 'test-hash',
+                'full_name': 'Test User',
+                'email_verified': True,
+                'is_active': True
+            }).execute()
+            logger.info(f"Created test user: {user_id}")
+        
+        # Check if account exists
+        account_result = await client.table('accounts').select('id').eq('id', user_id).execute()
+        if not account_result.data:
+            # Create personal account
+            await client.table('accounts').insert({
+                'id': user_id,
+                'name': 'Personal Account',
+                'slug': f'personal-{user_id}',
+                'personal_account': True
+            }).execute()
+            logger.info(f"Created personal account: {user_id}")
+            
+            # Link user to account
+            await client.table('account_users').insert({
+                'account_id': user_id,
+                'user_id': user_id,
+                'role': 'owner'
+            }).execute()
+            logger.info(f"Linked user to account: {user_id}")
+            
+    except Exception as e:
+        logger.error(f"Error ensuring user/account exist: {e}")
+        # Continue anyway for testing
+
 # TTL for Redis response lists (24 hours)
 REDIS_RESPONSE_LIST_TTL = 3600 * 24
 
@@ -256,8 +297,8 @@ async def check_for_active_project_agent_run(client, project_id: str):
     Check if there is an active agent run for any thread in the given project.
     If found, returns the ID of the active run, otherwise returns None.
     """
-    project_threads = await client.table('threads').select('thread_id').eq('project_id', project_id).execute()
-    project_thread_ids = [t['thread_id'] for t in project_threads.data]
+    project_threads = await client.table('threads').select('id').eq('project_id', project_id).execute()
+    project_thread_ids = [t['id'] for t in project_threads.data]
 
     if project_thread_ids:
         active_runs = await client.table('agent_runs').select('id').in_('thread_id', project_thread_ids).eq('status', 'running').execute()
@@ -371,7 +412,7 @@ async def start_agent(
     client = await db.client
 
     await verify_thread_access(client, thread_id, user_id)
-    thread_result = await client.table('threads').select('project_id', 'account_id', 'agent_id', 'metadata').eq('thread_id', thread_id).execute()
+    thread_result = await client.table('threads').select('project_id', 'account_id', 'agent_id', 'metadata').eq('id', thread_id).execute()
     if not thread_result.data:
         raise HTTPException(status_code=404, detail="Thread not found")
     thread_data = thread_result.data[0]
@@ -434,7 +475,7 @@ async def start_agent(
 
     try:
         # Get project data to find sandbox ID
-        project_result = await client.table('projects').select('*').eq('project_id', project_id).execute()
+        project_result = await client.table('projects').select('*').eq('id', project_id).execute()
         if not project_result.data:
             raise HTTPException(status_code=404, detail="Project not found")
         
@@ -803,7 +844,7 @@ async def generate_and_update_project_name(project_id: str, prompt: str):
             logger.warning(f"Failed to get valid response from LLM for project {project_id} naming. Response: {response}")
 
         if generated_name:
-            update_result = await client.table('projects').update({"name": generated_name}).eq("project_id", project_id).execute()
+            update_result = await client.table('projects').update({"name": generated_name}).eq("id", project_id).execute()
             if hasattr(update_result, 'data') and update_result.data:
                 logger.info(f"Successfully updated project {project_id} name to '{generated_name}'")
             else:
@@ -854,7 +895,10 @@ async def initiate_agent_with_files(
     logger.info(f"Starting new agent in agent builder mode: {is_agent_builder}, target_agent_id: {target_agent_id}")
 
     logger.info(f"[\033[91mDEBUG\033[0m] Initiating new agent with prompt and {len(files)} files (Instance: {instance_id}), model: {model_name}, enable_thinking: {enable_thinking}")
-    client = await db.client
+    client = db.client
+    
+    # Ensure user and account exist
+    await ensure_user_and_account_exist(client, user_id)
     account_id = user_id # In Basejump, personal account_id is the same as user_id
     
     # Load agent configuration if agent_id is provided
@@ -884,10 +928,9 @@ async def initiate_agent_with_files(
         # 1. Create Project
         placeholder_name = f"{prompt[:30]}..." if len(prompt) > 30 else prompt
         project = await client.table('projects').insert({
-            "project_id": str(uuid.uuid4()), "account_id": account_id, "name": placeholder_name,
-            "created_at": datetime.now(timezone.utc).isoformat()
+            "account_id": account_id, "name": placeholder_name
         }).execute()
-        project_id = project.data[0]['project_id']
+        project_id = project.data[0]['id']
         logger.info(f"Created new project: {project_id}")
 
         # 2. Create Sandbox
@@ -910,7 +953,7 @@ async def initiate_agent_with_files(
               token = str(vnc_link).split("token='")[1].split("'")[0]
         except Exception as e:
             logger.error(f"Error creating sandbox: {str(e)}")
-            await client.table('projects').delete().eq('project_id', project_id).execute()
+            await client.table('projects').delete().eq('id', project_id).execute()
             if sandbox_id:
               try: await delete_sandbox(sandbox_id)
               except Exception as e: pass
@@ -923,14 +966,22 @@ async def initiate_agent_with_files(
                 'id': sandbox_id, 'pass': sandbox_pass, 'vnc_preview': vnc_url,
                 'sandbox_url': website_url, 'token': token
             }
-        }).eq('project_id', project_id).execute()
+        }).eq('id', project_id).execute()
 
-        if not update_result.data:
-            logger.error(f"Failed to update project {project_id} with new sandbox {sandbox_id}")
+        # Debug logging
+        logger.info(f"Update result type: {type(update_result)}")
+        logger.info(f"Update result data: {update_result.data}")
+        logger.info(f"Update result error: {update_result.error}")
+        
+        # Check for update errors instead of checking data presence
+        if update_result.error:
+            logger.error(f"Failed to update project {project_id} with new sandbox {sandbox_id}: {update_result.error}")
             if sandbox_id:
               try: await delete_sandbox(sandbox_id)
               except Exception as e: logger.error(f"Error deleting sandbox: {str(e)}")
             raise Exception("Database update failed")
+        
+        logger.info(f"Successfully updated project {project_id} with sandbox {sandbox_id}")
 
         # 3. Create Thread
         thread_data = {

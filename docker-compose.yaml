@@ -11,6 +11,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/database/init:/docker-entrypoint-initdb.d
+    command: postgres -c max_connections=200 -c shared_buffers=256MB
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U neo_user -d neo_db"]
       interval: 10s
@@ -115,7 +116,7 @@ services:
       - MINIO_ENDPOINT=minio:9000
       - MINIO_ACCESS_KEY=neo_minio
       - MINIO_SECRET_KEY=neo_minio_password
-      - ISOLATOR_URL=http://isolator:8001
+      - ISOLATOR_URL=http://localhost:8001
     depends_on:
       postgres:
         condition: service_healthy
@@ -124,8 +125,6 @@ services:
       rabbitmq:
         condition: service_healthy
       minio:
-        condition: service_healthy
-      isolator:
         condition: service_healthy
 
   # Background Worker
@@ -151,7 +150,7 @@ services:
       - MINIO_ENDPOINT=minio:9000
       - MINIO_ACCESS_KEY=neo_minio
       - MINIO_SECRET_KEY=neo_minio_password
-      - ISOLATOR_URL=http://isolator:8001
+      - ISOLATOR_URL=http://localhost:8001
     depends_on:
       postgres:
         condition: service_healthy
@@ -160,8 +159,6 @@ services:
       rabbitmq:
         condition: service_healthy
       minio:
-        condition: service_healthy
-      isolator:
         condition: service_healthy
 
   # Frontend
