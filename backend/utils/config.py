@@ -149,6 +149,11 @@ class Configuration:
     ISOLATOR_URL: str = "http://localhost:8001"
     ISOLATOR_API_KEY: Optional[str] = None
     
+    # Legacy Daytona configuration (for compatibility)
+    DAYTONA_API_KEY: Optional[str] = None
+    DAYTONA_SERVER_URL: Optional[str] = "http://localhost:3986"
+    DAYTONA_TARGET: Optional[str] = "local"
+    
     # MinIO Storage configuration (replaces Supabase Storage)
     MINIO_ENDPOINT: str = "localhost:9000"
     MINIO_ACCESS_KEY: str = "neo_minio"
